@@ -1,0 +1,7 @@
+### aws ec2 describe-instances --profile TJ --query "Reservations[*].Instances[*].[InstanceId, PublicIpAddress]" --output table
+### aws ec2 describe-instances --profile TJ --query "Reservations[*].Instances[*].[PublicIpAddress]" --output table >> instance_list.yml
+
+
+instance_list:
+  - instance_id: "i-0731367e158fcbbcc"
+  - instance_id: "i-0731367e1572cbb2c"
