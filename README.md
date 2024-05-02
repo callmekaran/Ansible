@@ -1,2 +1,2 @@
 # Use Cloudshell
-ansible-playbook -i inventory.yaml Install-SSM-Update-IAM-ROLE.yaml
+ansible-playbook -i inventory.yaml Update-IAM-Role.yaml Install-SSM-Package.yaml
