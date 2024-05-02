@@ -16,6 +16,5 @@
         aws ec2 associate-iam-instance-profile
         --instance-id "{{ item.instance_id }}"
         --iam-instance-profile Name=SSM-DEVOPS
-        --profile TJ
       loop: "{{ instance_list }}"
       register: command_output
