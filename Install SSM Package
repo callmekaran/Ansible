@@ -32,10 +32,3 @@
         name: amazon-ssm-agent
         state: started
         enabled: yes
-
-    - name: Update IAM role for Amazon SSM Agent
-      aws_iam_instance_profile:
-        name: desired-instance-profile-name
-        role: desired-iam-role-name
-        state: present
-
