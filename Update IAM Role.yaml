@@ -1,0 +1,21 @@
+#Use Cloudshell
+
+---
+- name: Associate IAM Instance Profile with EC2 Instances
+  hosts: localhost  # Run tasks on the Ansible control machine
+  connection: local  # Use local connection
+  gather_facts: no
+
+  tasks:
+    - name: Include instance list variables
+      include_vars:
+        file: instance_list.yml  # Include the instance list from a separate YAML file
+
+    - name: Associate IAM Instance Profile with EC2 Instances
+      command: >
+        aws ec2 associate-iam-instance-profile
+        --instance-id "{{ item.instance_id }}"
+        --iam-instance-profile Name=SSM-DEVOPS
+        --profile TJ
+      loop: "{{ instance_list }}"
+      register: command_output
