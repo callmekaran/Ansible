@@ -1,0 +1,16 @@
+my_servers:
+  hosts:
+    server1:
+      ansible_host: 3.15.17.236
+      ansible_user: ubuntu
+      ansible_ssh_private_key_file: .pem
+
+    server2:
+      ansible_host: 3.15.190.66
+      ansible_user: ubuntu
+      ansible_ssh_private_key_file: ubuntu.pem
+
+    server3:
+      ansible_host: 18.11.126.198
+      ansible_user: ubuntu
+      ansible_ssh_private_key_file: ubuntu.pem
