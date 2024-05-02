@@ -1,0 +1,41 @@
+---
+- name: Install and Configure Amazon SSM Agent with IAM Role Update
+  hosts: my_servers
+  become: yes  # Run tasks with sudo privileges
+
+  tasks:
+    - name: Remove amazon-ssm-agent snap (if installed)
+      command: sudo snap remove amazon-ssm-agent
+      ignore_errors: yes  # Ignore errors if the snap is not installed
+
+    - name: Create /tmp/ssm directory
+      file:
+        path: /tmp/ssm
+        state: directory
+
+    - name: Change directory to /tmp/ssm
+      become_user: root  # Execute as root
+      shell: cd /tmp/ssm
+
+    - name: Download Amazon SSM Agent Debian package
+      get_url:
+        url: "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb"
+        dest: /tmp/ssm/amazon-ssm-agent.deb
+
+    - name: Install Amazon SSM Agent using dpkg
+      apt:
+        deb: /tmp/ssm/amazon-ssm-agent.deb
+        state: present
+
+    - name: Start Amazon SSM Agent service
+      systemd:
+        name: amazon-ssm-agent
+        state: started
+        enabled: yes
+
+    - name: Update IAM role for Amazon SSM Agent
+      aws_iam_instance_profile:
+        name: desired-instance-profile-name
+        role: desired-iam-role-name
+        state: present
+
