@@ -2,14 +2,6 @@
 - name: Setup LAMP stack with Nginx, PHP 8.2-FPM, MySQL, and phpMyAdmin
   hosts: all
   become: true
-  #gather_facts: false
-  vars:
-    variable_foldername: "karan"  # Folder name
-    server_name: "example.com www.example.com"  # Server names
-    php_version: "8.2"  # PHP version
-    certbot_email: "devops@rlogical.com"
-    certbot_server_name1: "example.com"
-    certbot_server_name2: "www.example.com"
 
   tasks:
     - name: Update APT packages
@@ -21,36 +13,13 @@
         repo: ppa:ondrej/php
         state: present
 
-
     - name: Update APT packages after adding PHP PPA
       apt:
         update_cache: yes
 
-
-    - name: Install PHP 8.2-FPM, Nginx, MySQL server, and required packages
+    - name: Install required packages
       apt:
-        name:
-          - nginx
-          - mysql-server
-          - certbot
-          - python3-certbot-nginx
-          - phpmyadmin
-          - unzip
-          - curl
-          - net-tools
-          - htop
-          - atop
-          - zip
-          - openssl
-          - "php{{ php_version }}-fpm"         
-          - "php{{ php_version }}-mysql"     
-          - "php{{ php_version }}-bcmath"
-          - "php{{ php_version }}-curl"
-          - "php{{ php_version }}-mbstring"
-          - "php{{ php_version }}-tokenizer"
-          - "php{{ php_version }}-xml"
-          - "php{{ php_version }}-zip"
-           
+        name: "{{ required_packages }}"
         state: latest 
 
     - name: Start and enable services
@@ -105,13 +74,12 @@
       args:
         chdir: /var/www/html/{{ variable_foldername }}
 
-
     - name: Set executable permissions for Composer
       file:
         path: /usr/local/bin/composer
         mode: '0755'
 
-    - name: Deploy Nginx configuration
+    - name: Deploy APP Nginx configuration
       template:
         src: app.conf.j2
         dest: /etc/nginx/sites-enabled/{{ variable_foldername }}.conf
@@ -119,9 +87,19 @@
       - test nginx
       - reload nginx
 
-    - name: Obtain SSL certificate with Certbot
+    - name: Deploy Phpmyadmin Nginx configuration
+      template:
+        src: phpmyadmin.conf.j2
+        dest: /etc/nginx/sites-enabled/{{ phpmyadmin_filename }}.conf
+      notify:
+      - test nginx
+      - reload nginx
+
+    - name: Obtain SSL certificate For APP
       command: certbot --nginx -d {{ certbot_server_name1 }} -d {{ certbot_server_name2 }} --email {{ certbot_email }} --agree-tos --non-interactive --redirect --expand
-  
+
+    - name: Obtain SSL certificate For Phpmyadmin Database
+      command: certbot --nginx -d {{ phpmyadmin_server_name }} --email {{ certbot_email }} --agree-tos --non-interactive
 
   handlers:
   - name: reload nginx
