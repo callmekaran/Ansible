@@ -4,8 +4,9 @@
   become: true
   gather_facts: false
   vars:
-    variable_foldername: "karan"            # Folder name set to "karan"
-
+    variable_foldername: "karan"  # Folder name
+    server_name: "example.com www.example.com"  # Server names
+    php_version: "8.2"  # PHP version
 
   tasks:
     - name: Update APT packages
@@ -21,12 +22,12 @@
       apt:
         update_cache: yes
 
-
     - name: Install PHP 8.2-FPM, Nginx, MySQL server, and required packages
       apt:
         name:
           - nginx
           - mysql-server
+          - certbot
           - phpmyadmin
           - unzip
           - curl
@@ -35,10 +36,16 @@
           - atop
           - zip
           - openssl
-          - php8.2-{bcmath,curl,mbstring,tokenizer,xml,zip,fpm,mysql}
-          - python3-certbot-nginx
-
-        state: latest
+          - "php{{ php_version }}-fpm"         
+          - "php{{ php_version }}-mysql"     
+          - "php{{ php_version }}-bcmath"
+          - "php{{ php_version }}-curl"
+          - "php{{ php_version }}-mbstring"
+          - "php{{ php_version }}-tokenizer"
+          - "php{{ php_version }}-xml"
+          - "php{{ php_version }}-zip"
+           
+        state: latest 
 
     - name: Start and enable services
       systemd:
@@ -91,3 +98,19 @@
       file:
         path: /usr/local/bin/composer
         mode: '0755'
+
+    - name: Deploy Nginx configuration
+      template:
+        src: app.conf.j2
+        dest: /etc/nginx/sites-enabled/{{ variable_foldername }}.conf
+      notify:
+      - test nginx
+      - reload nginx
+ 
+  handlers:
+  - name: reload nginx
+    systemd:
+      name: nginx
+      state: reloaded
+  - name: test nginx
+    command: nginx -t
