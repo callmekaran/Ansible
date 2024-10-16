@@ -1,0 +1,124 @@
+---
+- name: Setup LAMP stack with Nginx, PHP 8.2-FPM, MySQL, and phpMyAdmin
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    variable_foldername: "karan"  # Folder name
+    server_name: "example.com www.example.com"  # Server names
+    php_version: "8.2"  # PHP version
+    certbot_email: "devops@rlogical.com"
+    certbot_server_name1: "example.com"
+    certbot_server_name2: "www.example.com"
+
+  tasks:
+    - name: Update APT packages
+      apt:
+        update_cache: yes
+
+    - name: Add Ondřej Surý's PPA for PHP 8.2
+      apt_repository:
+        repo: ppa:ondrej/php
+        state: present
+
+    - name: Update APT packages after adding PHP PPA
+      apt:
+        update_cache: yes
+
+
+    - name: Install PHP 8.2-FPM, Nginx, MySQL server, and required packages
+      apt:
+        name:
+          - nginx
+          - mysql-server
+          - certbot
+          - python3-certbot-nginx
+          - phpmyadmin
+          - unzip
+          - curl
+          - net-tools
+          - htop
+          - atop
+          - zip
+          - openssl
+          - "php{{ php_version }}-fpm"         
+          - "php{{ php_version }}-mysql"     
+          - "php{{ php_version }}-bcmath"
+          - "php{{ php_version }}-curl"
+          - "php{{ php_version }}-mbstring"
+          - "php{{ php_version }}-tokenizer"
+          - "php{{ php_version }}-xml"
+          - "php{{ php_version }}-zip"
+           
+        state: latest 
+
+    - name: Start and enable services
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - php8.2-fpm
+        - nginx
+        - mysql
+
+    - name: Ensure pip is installed
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
+
+    - name: Set ownership of /var/www/html to ubuntu user
+      file:
+        path: /var/www/html
+        owner: ubuntu
+        group: ubuntu
+        recurse: true
+
+    - name: Create project folder "{{ variable_foldername }}"
+      file:
+        path: "/var/www/html/{{ variable_foldername }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Download Composer installer
+      get_url:
+        url: https://getcomposer.org/installer
+        dest: "/var/www/html/{{ variable_foldername }}/composer-setup.php"
+
+    - name: Verify Composer installer
+      command: php -r "if (hash_file('sha384', '/var/www/html/{{ variable_foldername }}/composer-setup.php') === 'dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('/var/www/html/{{ variable_foldername }}/composer-setup.php'); } echo PHP_EOL;"
+      args:
+        chdir: "/var/www/html/{{ variable_foldername }}"
+
+    - name: Run Composer setup
+      command: php /var/www/html/{{ variable_foldername }}/composer-setup.php
+      args:
+        chdir: "/var/www/html/{{ variable_foldername }}"
+
+    - name: Move Composer to /usr/local/bin
+      command: mv /var/www/html/{{ variable_foldername }}/composer.phar /usr/local/bin/composer
+
+    - name: Set executable permissions for Composer
+      file:
+        path: /usr/local/bin/composer
+        mode: '0755'
+
+    - name: Deploy Nginx configuration
+      template:
+        src: app.conf.j2
+        dest: /etc/nginx/sites-enabled/{{ variable_foldername }}.conf
+      notify:
+      - test nginx
+      - reload nginx
+
+    - name: Obtain SSL certificate with Certbot
+      command: certbot --nginx -d {{ certbot_server_name1 }} -d {{ certbot_server_name2 }} --email {{ certbot_email }} --agree-tos --non-interactive --redirect --expand
+
+  handlers:
+  - name: reload nginx
+    systemd:
+      name: nginx
+      state: reloaded
+  - name: test nginx
+    command: nginx -t
