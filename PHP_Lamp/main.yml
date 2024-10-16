@@ -2,6 +2,8 @@
 - name: Setup LAMP stack with Nginx, PHP 8.2-FPM, MySQL, and phpMyAdmin
   hosts: all
   become: true
+  vars_files:
+    - variable.yml  
 
   tasks:
     - name: Update APT packages
