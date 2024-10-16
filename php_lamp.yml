@@ -7,6 +7,9 @@
     variable_foldername: "karan"  # Folder name
     server_name: "example.com www.example.com"  # Server names
     php_version: "8.2"  # PHP version
+    certbot_email: "devops@rlogical.com"
+    certbot_server_name1: "example.com"
+    certbot_server_name2: "www.example.com"
 
   tasks:
     - name: Update APT packages
@@ -21,6 +24,7 @@
     - name: Update APT packages after adding PHP PPA
       apt:
         update_cache: yes
+
 
     - name: Install PHP 8.2-FPM, Nginx, MySQL server, and required packages
       apt:
@@ -107,7 +111,10 @@
       notify:
       - test nginx
       - reload nginx
- 
+
+    - name: Obtain SSL certificate with Certbot
+      command: certbot --nginx -d {{ certbot_server_name1 }} -d {{ certbot_server_name2 }} --email {{ certbot_email }} --agree-tos --non-interactive --redirect --expand
+
   handlers:
   - name: reload nginx
     systemd:
