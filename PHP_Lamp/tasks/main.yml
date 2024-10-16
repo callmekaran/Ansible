@@ -1,0 +1,98 @@
+---
+# tasks file for lamp_setup
+- name: Update APT packages
+  apt:
+    update_cache: yes
+
+- name: Add PHP 8.2 PPA
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+
+- name: Update APT packages after adding PHP PPA
+  apt:
+    update_cache: yes
+
+- name: Install required packages
+  apt:
+    name: "{{ required_packages }}"
+    state: latest 
+
+- name: Start and enable services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - php8.2-fpm
+    - nginx
+    - mysql
+
+- name: Ensure pip is installed
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+
+- name: Set ownership of /var/www/html to ubuntu user
+  file:
+    path: /var/www/html
+    owner: ubuntu
+    group: ubuntu
+    recurse: true
+
+- name: Create project folder "{{ variable_foldername }}"
+  file:
+    path: "/var/www/html/{{ variable_foldername }}"
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+
+- name: Download Composer installer
+  get_url:
+    url: https://getcomposer.org/installer
+    dest: "/var/www/html/{{ variable_foldername }}/composer-setup.php"
+
+- name: Verify Composer installer
+  command: php -r "if (hash_file('sha384', '/var/www/html/{{ variable_foldername }}/composer-setup.php') === 'dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('/var/www/html/{{ variable_foldername }}/composer-setup.php'); } echo PHP_EOL;"
+  args:
+    chdir: "/var/www/html/{{ variable_foldername }}"
+
+- name: Run Composer setup
+  command: php /var/www/html/{{ variable_foldername }}/composer-setup.php
+  args:
+    chdir: "/var/www/html/{{ variable_foldername }}"
+
+- name: Move Composer to /usr/local/bin
+  command: mv /var/www/html/{{ variable_foldername }}/composer.phar /usr/local/bin/composer
+
+- name: Unlink Composer variable_foldername
+  shell: php -r "unlink('composer-setup.php');"
+  args:
+    chdir: /var/www/html/{{ variable_foldername }}
+
+- name: Set executable permissions for Composer
+  file:
+    path: /usr/local/bin/composer
+    mode: '0755'
+
+- name: Deploy APP Nginx configuration
+  template:
+    src: app.conf.j2
+    dest: /etc/nginx/sites-enabled/{{ variable_foldername }}.conf
+  notify:
+  - test nginx
+  - reload nginx
+
+- name: Deploy Phpmyadmin Nginx configuration
+  template:
+    src: phpmyadmin.conf.j2
+    dest: /etc/nginx/sites-enabled/{{ phpmyadmin_filename }}.conf
+  notify:
+  - test nginx
+  - reload nginx
+
+- name: Obtain SSL certificate For APP
+  command: certbot --nginx -d {{ certbot_server_name1 }} -d {{ certbot_server_name2 }} --email {{ certbot_email }} --agree-tos --non-interactive --redirect --expand
+
+- name: Obtain SSL certificate For Phpmyadmin Database
+  command: certbot --nginx -d {{ phpmyadmin_server_name }} --email {{ certbot_email }} --agree-tos --non-interactive
