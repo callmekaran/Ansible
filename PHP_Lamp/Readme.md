@@ -1,5 +1,4 @@
 # Ansible Role: PHP_LAMP Setup
-# I AM CALLING LAMP BUT IT IS LNMP BECAUSE I HAVE USED NGINX
 
 This Ansible role sets up a LAMP (Linux, Nginx, MySQL, PHP) stack on Ubuntu servers, along with phpMyAdmin and necessary configurations for Nginx, Letsencrypt SSL, Linux Permission and Basic Commands.
 
