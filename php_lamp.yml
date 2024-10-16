@@ -2,9 +2,10 @@
 - name: Setup LAMP stack with Nginx, PHP 8.2-FPM, MySQL, and phpMyAdmin
   hosts: all
   become: true
-  
-  vars_files:
-    - vars.yml
+  gather_facts: false
+  vars:
+    variable_foldername: "karan"            # Folder name set to "karan"
+
 
   tasks:
     - name: Update APT packages
@@ -24,8 +25,6 @@
     - name: Install PHP 8.2-FPM, Nginx, MySQL server, and required packages
       apt:
         name:
-          - php8.2-fpm
-          - php8.2-mysql
           - nginx
           - mysql-server
           - phpmyadmin
@@ -35,97 +34,9 @@
           - htop
           - atop
           - zip
-
-        state: latest
-
-    - name: Start and enable services
-      systemd:
-        name: "{{ item }}"
-        state: started
-        enabled: true
-      loop:
-        - php8.2-fpm
-        - nginx
-        - mysql
-
-    - name: Ensure pip is installed
-      ansible.builtin.package:
-        name: python3-pip
-        state: present
-
-    - name: Set ownership of /var/www/html to ubuntu user
-      file:
-        path: /var/www/html
-        owner: ubuntu
-        group: ubuntu
-        recurse: true
-
-    - name: Create project folder "{{ variable_foldername }}"
-      file:
-        path: "/var/www/html/{{ variable_foldername }}"
-        state: directory
-        owner: ubuntu
-        group: ubuntu
-
-    - name: Download Composer installer
-      get_url:
-        url: https://getcomposer.org/installer
-        dest: "/var/www/html/{{ variable_foldername }}/composer-setup.php"
-
-    - name: Verify Composer installer
-      command: php -r "if (hash_file('sha384', '/var/www/html/{{ variable_foldername }}/composer-setup.php') === 'dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('/var/www/html/{{ variable_foldername }}/composer-setup.php'); } echo PHP_EOL;"
-      args:
-        chdir: "/var/www/html/{{ variable_foldername }}"
-
-    - name: Run Composer setup
-      command: php /var/www/html/{{ variable_foldername }}/composer-setup.php
-      args:
-        chdir: "/var/www/html/{{ variable_foldername }}"
-
-    - name: Move Composer to /usr/local/bin
-      command: mv /var/www/html/{{ variable_foldername }}/composer.phar /usr/local/bin/composer
-
-    - name: Set executable permissions for Composer
-      file:
-        path: /usr/local/bin/composer
-        mode: '0755'
----
-- name: Setup LAMP stack with Nginx, PHP 8.2-FPM, MySQL, and phpMyAdmin
-  hosts: all
-  become: true
-  
-  vars_files:
-    - vars.yml
-
-  tasks:
-    - name: Update APT packages
-      apt:
-        update_cache: yes
-
-    - name: Add Ondřej Surý's PPA for PHP 8.2
-      apt_repository:
-        repo: ppa:ondrej/php
-        state: present
-
-    - name: Update APT packages after adding PHP PPA
-      apt:
-        update_cache: yes
-
-
-    - name: Install PHP 8.2-FPM, Nginx, MySQL server, and required packages
-      apt:
-        name:
-          - php8.2-fpm
-          - php8.2-mysql
-          - nginx
-          - mysql-server
-          - phpmyadmin
-          - unzip
-          - curl
-          - net-tools
-          - htop
-          - atop
-          - zip
+          - openssl
+          - php8.2-{bcmath,curl,mbstring,tokenizer,xml,zip,fpm,mysql}
+          - python3-certbot-nginx
 
         state: latest
 
