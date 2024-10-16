@@ -9,11 +9,11 @@ This Ansible role sets up a LAMP (Linux, Nginx, MySQL, PHP) stack on Ubuntu serv
   
 **Usage**
   
-**Clone this repository or download the role into your Ansible roles directory.**
+- **Clone this repository or download the role into your Ansible roles directory.**
 
-**Customize the variables in your playbook or create a vars.yml file with your specific configurations.**
+- **Customize the variables in your playbook or create a vars.yml file with your specific configurations.**
 
-**Run your playbook with Ansible:**
+- **Run your playbook with Ansible:**
 
 ansible-playbook main.yml **or**  ansible-playbook -i 'publicip,' -u user --private-key ./keypath main.yml
 
