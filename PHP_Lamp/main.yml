@@ -2,7 +2,7 @@
 - name: Setup LAMP stack with Nginx, PHP 8.2-FPM, MySQL, and phpMyAdmin
   hosts: all
   become: true
-  gather_facts: false
+  #gather_facts: false
   vars:
     variable_foldername: "karan"  # Folder name
     server_name: "example.com www.example.com"  # Server names
@@ -16,10 +16,11 @@
       apt:
         update_cache: yes
 
-    - name: Add Ondřej Surý's PPA for PHP 8.2
+    - name: Add PHP 8.2 PPA
       apt_repository:
         repo: ppa:ondrej/php
         state: present
+
 
     - name: Update APT packages after adding PHP PPA
       apt:
@@ -99,6 +100,12 @@
     - name: Move Composer to /usr/local/bin
       command: mv /var/www/html/{{ variable_foldername }}/composer.phar /usr/local/bin/composer
 
+    - name: Unlink Composer variable_foldername
+      shell: php -r "unlink('composer-setup.php');"
+      args:
+        chdir: /var/www/html/{{ variable_foldername }}
+
+
     - name: Set executable permissions for Composer
       file:
         path: /usr/local/bin/composer
@@ -114,6 +121,7 @@
 
     - name: Obtain SSL certificate with Certbot
       command: certbot --nginx -d {{ certbot_server_name1 }} -d {{ certbot_server_name2 }} --email {{ certbot_email }} --agree-tos --non-interactive --redirect --expand
+  
 
   handlers:
   - name: reload nginx
