@@ -15,8 +15,9 @@ This Ansible role sets up a LAMP (Linux, Nginx, MySQL, PHP) stack on Ubuntu serv
 
 - **Run your playbook with Ansible:**
 
-## ansible-playbook main.yml **or**  
-## ansible-playbook -i 'publicip,' -u user --private-key ./keypath main.yml
+ansible-playbook main.yml 
+**or**  
+ansible-playbook -i 'publicip,' -u user --private-key ./keypath main.yml
 
 
 
