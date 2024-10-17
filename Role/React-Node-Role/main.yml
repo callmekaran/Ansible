@@ -1,0 +1,7 @@
+#Related to React-Node
+---
+- name: Setup React, Node Packages, pm2, Nginx and Certbot
+  hosts: all
+  become: true
+  roles:
+    - react-node
