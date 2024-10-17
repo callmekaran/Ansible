@@ -1,0 +1,28 @@
+###
+projectname: "thevilla" # Project Name
+frontend_foldername: "frontend_villa"  # Frontend Folder name
+backend_foldername: "backend_villa"   # Backend Folder name 
+frontend_url: "villa.com www.villa.com"  # Frontend URL 
+backend_url: "villa-api.com"  # Backend URL  # SSL For backend 
+certbot_email: "devops@rlogical.com"    # Email For SSL Termination
+certbot_server_name1: "villa.com"     # SSL For Frontend without www
+certbot_server_name2: "www.villa.com"   # SSL For Frontend with www
+frontend_logfile_name: "frontend_villa"  # Frontend Nginx Log File name
+backend_logfile_name: "backend_villa"     # Backend Nginx Log File name
+frontend_port: "3000"  #Frontend Port Number
+backend_port: "5000"  #Backend Port Number
+required_packages:  # List of packages to install
+  - nginx
+  - certbot
+  - python3-certbot-nginx
+  - unzip
+  - curl
+  - net-tools
+  - htop
+  - atop
+  - zip
+  - openssl
+  - curl
+  - build-essential
+  - checkinstall
+  - plocate
