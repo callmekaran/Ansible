@@ -1,0 +1,112 @@
+---
+      - name: Install required packages
+        apt:
+          name: "{{ required_packages }}"
+          state: present
+          update_cache: yes
+  
+      - name: Install NVM
+        shell: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+        args:
+          executable: /bin/bash
+  
+      - name: Add NVM to .bashrc for persistent access
+        lineinfile:
+          path: ~/.bashrc
+          line: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+        become: false  # Ensure this runs as the target user, not root
+  
+      - name: Install Node.js version 20.10.0
+        shell: |
+          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && nvm install v20.10.0
+        args:
+          executable: /bin/bash
+  
+      - name: Set Node.js version 20.10.0 as default
+        shell: |
+          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && nvm alias default v20.10.0
+        args:
+          executable: /bin/bash
+  
+      - name: Install PM2 globally
+        shell: |
+          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && npm install pm2@latest -g
+        args:
+          executable: /bin/bash
+  
+      - name: Check Node.js version
+        shell: |
+          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && node -v
+        args:
+          executable: /bin/bash
+        register: node_version
+  
+      - name: Print Node.js version
+        debug:
+          msg: "Node.js version: {{ node_version.stdout }}"
+  
+      - name: Check PM2 version
+        shell: |
+          export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && pm2 -v
+        args:
+          executable: /bin/bash
+        register: pm2_version
+  
+      - name: Print PM2 version
+        debug:
+          msg: "PM2 version: {{ pm2_version.stdout }}"
+
+      - name: Set ownership of /var/www/html to ubuntu user
+        file:
+          path: /var/www/html
+          owner: ubuntu
+          group: ubuntu
+          recurse: true
+
+      - name: Create project folder "{{ projectname }}"
+        file:
+         path: "/var/www/html/{{ projectname }}"
+         state: directory
+         owner: ubuntu
+         group: ubuntu
+
+      - name: Create Frontend folder "{{ frontend_foldername }}"
+        file:
+         path: "/var/www/html/{{ projectname }}/{{ frontend_foldername }}"
+         state: directory
+         owner: ubuntu
+         group: ubuntu
+
+      - name: Create Frontend folder "{{ backend_foldername }}"
+        file:
+         path: "/var/www/html/{{ projectname }}/{{ backend_foldername }}"
+         state: directory
+         owner: ubuntu
+         group: ubuntu
+
+      - name: Deploy Frontend Nginx configuration
+        template:
+          src: frontend.conf.j2
+          dest: /etc/nginx/sites-enabled/{{ frontend_foldername }}.conf
+        notify:
+        - test nginx
+        - reload nginx
+
+      - name: Deploy Backend Nginx configuration
+        template:
+          src: backend.conf.j2
+          dest: /etc/nginx/sites-enabled/{{ backend_foldername }}.conf
+        notify:
+        - test nginx
+        - reload nginx
+
+      - name: Obtain SSL certificate For APP
+        command: certbot --nginx -d {{ certbot_server_name1 }} -d {{ certbot_server_name2 }} --email {{ certbot_email }} --agree-tos --non-interactive --redirect --expand
+
+      - name: Obtain SSL certificate For APP
+        command: certbot --nginx -d {{ backend_url }} --email {{ certbot_email }} --agree-tos --non-interactive --redirect --expand
+
