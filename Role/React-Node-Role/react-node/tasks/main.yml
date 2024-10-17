@@ -88,6 +88,22 @@
          owner: ubuntu
          group: ubuntu
 
+      - name: Git Clone to Frontend Folder
+        shell: |
+          "git clone https://Username:{{ bitbucket_password }}@bitbucket.org/username/repo.git ."
+       
+        args:
+          chdir: "/var/www/html/{{ projectname }}/{{ frontend_foldername }}"
+
+
+      - name: Git Clone to Backend Folder
+        shell: | 
+          "git clone https://Username:{{ bitbucket_password }}@bitbucket.org/username/repo.git ."
+
+        args:
+          chdir: "/var/www/html/{{ projectname }}/{{ backend_foldername }}"
+
+
       - name: Deploy Frontend Nginx configuration
         template:
           src: frontend.conf.j2
