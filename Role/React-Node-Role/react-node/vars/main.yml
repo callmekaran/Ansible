@@ -11,6 +11,7 @@ frontend_logfile_name: "frontend_villa"  # Frontend Nginx Log File name
 backend_logfile_name: "backend_villa"     # Backend Nginx Log File name
 frontend_port: "3000"  #Frontend Port Number
 backend_port: "5000"  #Backend Port Number
+bitbucket_password: ""
 required_packages:  # List of packages to install
   - nginx
   - certbot
