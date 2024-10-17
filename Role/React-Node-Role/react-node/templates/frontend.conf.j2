@@ -1,0 +1,26 @@
+server{
+  
+    server_name {{ frontend_url }};
+
+    error_log /var/log/nginx/{{ frontend_logfile_name }}_error.log;
+    access_log /var/log/nginx/{{ frontend_logfile_name }}_access.log;
+
+    location / {
+        proxy_pass http://127.0.0.1:{{ frontend_port }};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_redirect off;
+    }
+
+    location ~ /.well-known {
+        allow all;
+    }
+
+ location ~ /\.git {
+        deny all;
+        }
+
+}
