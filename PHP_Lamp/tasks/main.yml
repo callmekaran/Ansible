@@ -100,7 +100,7 @@
 - name: Add cron job for SSL renewal
   cron:
     name: "SSL certificate renewal"
-    special_time: "midnight"
+    special_time: "daily"
     job: "/usr/bin/certbot renew --quiet --post-hook 'systemctl reload nginx'"
     user: root
     state: present
