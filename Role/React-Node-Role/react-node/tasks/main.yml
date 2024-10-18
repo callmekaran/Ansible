@@ -125,4 +125,11 @@
 
       - name: Obtain SSL certificate For APP
         command: certbot --nginx -d {{ backend_url }} --email {{ certbot_email }} --agree-tos --non-interactive --redirect --expand
-
+        
+      - name: Add cron job for SSL renewal
+        cron:
+          name: "SSL certificate renewal"
+          special_time: "daily"
+          job: "/usr/bin/certbot renew --quiet --post-hook 'systemctl reload nginx'"
+          user: root
+    state: present
