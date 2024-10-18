@@ -1,0 +1,23 @@
+#Collect CPU And Memory Metrics From Servers
+
+---
+- name: Collect CPU and Memory usage metrics
+  hosts: all  # or specify your host group
+  gather_facts: no
+
+  tasks:
+    - name: Get CPU usage metrics
+      command: top -b -n1 | grep 'Cpu(s)' | awk '{print $2 + $4}'  # Get the total CPU usage
+      register: cpu_usage
+
+    - name: Get Memory usage metrics
+      command: free | grep Mem | awk '{print $3/$2 * 100.0}'  # Get used memory percentage
+      register: memory_usage
+
+    - name: Display CPU usage
+      debug:
+        msg: "CPU usage on {{ inventory_hostname }}: {{ cpu_usage.stdout }}%"
+
+    - name: Display Memory usage
+      debug:
+        msg: "Memory usage on {{ inventory_hostname }}: {{ memory_usage.stdout }}%"
