@@ -96,3 +96,11 @@
 
 - name: Obtain SSL certificate For Phpmyadmin Database
   command: certbot --nginx -d {{ phpmyadmin_server_name }} --email {{ certbot_email }} --agree-tos --non-interactive
+
+- name: Add cron job for SSL renewal
+  cron:
+    name: "SSL certificate renewal"
+    special_time: "midnight"
+    job: "/usr/bin/certbot renew --quiet --post-hook 'systemctl reload nginx'"
+    user: root
+    state: present
