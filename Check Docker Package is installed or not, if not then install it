@@ -1,0 +1,26 @@
+** Check Docker Package is installed or not, if not then install it **
+===============================================================================
+
+---
+- name: Ensure Docker is installed
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Check if Docker is installed
+      command: docker --version
+      register: docker_op
+      ignore_errors: yes
+
+    - name: Install Docker on Ubuntu
+      when: docker_op.rc != 0
+      block:
+        - name: Update apt cache
+          apt:
+            update_cache: yes
+
+        - name: Install required packages
+          apt:
+            name: 
+              - docker.io
+            state: present
