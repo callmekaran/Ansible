@@ -1,0 +1,20 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+ Notification-task-For-Rollback-Stage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Google Chat
+        uses: SimonScholz/google-chat-action@main
+        with:
+          webhookUrl: https://chat.googleapis.com/v1/spaces/AAAAy-wr9vQ/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=Kem4GFuEkEEeTerSY2PW2_lKPi5qk12LTjr_SRTZ57w
+          jobStatus: '${{ job.status }}'
+          thread: TQtmnRR4Gkw
