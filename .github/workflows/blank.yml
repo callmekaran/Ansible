@@ -17,4 +17,4 @@ jobs:
         with:
           webhookUrl: https://chat.googleapis.com/v1/spaces/AAAAy-wr9vQ/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=Kem4GFuEkEEeTerSY2PW2_lKPi5qk12LTjr_SRTZ57w
           jobStatus: '${{ job.status }}'
-          threadKey: TQtmnRR4Gkw
+          threadKey: 5aV_SEUBJDg
